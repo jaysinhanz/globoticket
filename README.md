@@ -32,6 +32,17 @@ the final step is we will deploy each individual service using CI/CD automation 
 ## Main Branch
 ![properties diagram](images/Run-Main-branch-setting.png)
 
+## Master Branch 
+works in dev envirnoment, set multi-project start  -DEV 
+For docker compose,
+Create docker images for three projects, by going to the project folders
+docker build -t catalog .
+docker build -t ordering .
+docker build -t frontend .
+docker-compose.yml file is in demos/docker-compose folder. 
+go to the folder, run compose : docker compose up
+
+
 
 
 
