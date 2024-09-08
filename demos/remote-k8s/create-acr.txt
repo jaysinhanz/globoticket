@@ -1,0 +1,13 @@
+az acr create -n psgloboticketj -g ps-aks --sku Standard
+az acr update -n psgloboticketj --anonymous-pull-enabled
+
+docker tag frontend psgloboticketj.azurecr.io/frontend
+docker tag catalog psgloboticketj.azurecr.io/catalog
+docker tag ordering psgloboticketj.azurecr.io/ordering
+
+docker login psgloboticketj.azurecr.io
+
+docker push psgloboticketj.azurecr.io/frontend
+docker push catalog psgloboticketj.azurecr.io/catalog
+docker push ordering psgloboticketj.azurecr.io/ordering
+

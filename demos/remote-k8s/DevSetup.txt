@@ -1,0 +1,62 @@
+## Setup devlopment environment for azure cli and kubectl 
+# Check azure CLI version
+az --version
+# kubectl version
+kubectl version --client=true --short=false
+
+Set to your azure subscription
+az login -- may require some work
+
+#create the resource group in Azure
+az group create --name ps-aks --location australiaeast
+
+#Create the cluster, this can take a few minutes
+az aks create -n ps-demo -g ps-aks --node-osdisk-type Ephemeral --node-osdisk-size 30 --network-plugin azure --generate-ssh-keys
+
+#Get the credentials merged in your local .kube file that is used by e.g. kubectl
+az aks get-credentials -n ps-demo -g ps-aks
+
+# Create ACR
+az acr create -n psgloboticketj -g ps-aks --sku Standard
+
+az acr update -n psgloboticketj --anonymous-pull-enabled
+
+# Tag local images for upload to acr
+docker tag frontend psgloboticketj.azurecr.io/frontend
+docker tag catalog psgloboticketj.azurecr.io/catalog
+docker tag ordering psgloboticketj.azurecr.io/ordering
+
+
+# login to acr
+# Get credentials from azure portal acr => to psgloboticketj => settings => access keys => allow admin => note user name and password
+docker login psgloboticketj.azurecr.io 
+use user and password from portal
+
+#  push local images to ACR
+docker push psgloboticketj.azurecr.io/frontend
+docker push psgloboticketj.azurecr.io/catalog
+docker push psgloboticketj.azurecr.io/ordering
+
+#  go to PS D:\working\asp-dot-net-core-K8s\demos\local-k8s
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+kubectl apply -f .\service-account.yaml
+kubectl apply -f .\cluster-role-binding.yml
+
+## Run this in cloud shell
+kubectl -n kubernetes-dashboard create token admin-user
+Notedown the token
+eyJhbGciOiJSUzI1NiIsImtpZCI6Ik5LejByOXk0TXdZZ195cEFsY3lkS2tHWWh6ckFFTWdfRGhUdWNkaE5hV2cifQ.eyJhdWQiOlsiaHR0cHM6Ly9wcy1kZW1vLXBzLWFrcy1mZmZmMWQtbGEwZzFjM3UuaGNwLmF1c3RyYWxpYWVhc3QuYXptazhzLmlvIiwiXCJwcy1kZW1vLXBzLWFrcy1mZmZmMWQtbGEwZzFjM3UuaGNwLmF1c3RyYWxpYWVhc3QuYXptazhzLmlvXCIiXSwiZXhwIjoxNzI1Nzk1NTgyLCJpYXQiOjE3MjU3OTE5ODIsImlzcyI6Imh0dHBzOi8vcHMtZGVtby1wcy1ha3MtZmZmZjFkLWxhMGcxYzN1LmhjcC5hdXN0cmFsaWFlYXN0LmF6bWs4cy5pbyIsImt1YmVybmV0ZXMuaW8iOnsibmFtZXNwYWNlIjoia3ViZXJuZXRlcy1kYXNoYm9hcmQiLCJzZXJ2aWNlYWNjb3VudCI6eyJuYW1lIjoiYWRtaW4tdXNlciIsInVpZCI6IjkyMjJjYzI5LWE0ZDAtNDBiMS04MTcwLTIyNDhhODA2Mjc5NCJ9fSwibmJmIjoxNzI1NzkxOTgyLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZXJuZXRlcy1kYXNoYm9hcmQ6YWRtaW4tdXNlciJ9.lLT_vHEoK5P7fO4XiY3iGugAUDRao3I_MzVahw0xox3IuFb8I4WXPamy1WGvEra5o0QVaq86IQudgJ8qsiGKIDIVmdijQbq-kPkqBVmtIJsMtrTeRMm34ugZBLcH5z3DM6L7KAOfcY52qTbuC_DlHUrcVSR1pmEO6EAfM-OyNimXad00N1p-6bmOS3fmLa06KL-iG_AKiyo-Pe7zeZWuXcrg28AkqMmtJV2FrLHTV-a8CFPJxGJIrtRkxNLsCRzhQ_Pclk23BDDqfNyf1vY5ZnDA5nN7UAcwzjrpbQEi-i-KZF5lSZYuGAMHF4PjdqaEZJwbVQOl2MwbmqFV9adSotmRzO4FIwV0VpiYpcCBH1CDdte8efnsQ6U-TPzf_KqudhcjUHQTNOIh10wZDIAdA0Cov69nCTpaXWbZZVIY7xl_u7mw7fDKpTMy3omVCfrRPrBuc7W44kfa3DQ4CX7P9rYmYOfQWCz6AqVZF6r18YdJk4DerkH6Gsomta24B2u6dJBmh_yXzeEQnWm1ht_mM9Cg-xOX5lthERzngmgLCXBO_QqSmPf-2AMQfp3MIowJ-m99RintH7tgSxGRV72oiSG--KvekiywSLE6kgJ2yQlxY-LMlYhxcO_Ellmb5WMDhC6P2j0MPXqjUtp4gfpkSSTCWWP5Anjv7x1A4_ObGFk
+
+
+# on a powershell local window, run kubectl proxy
+kubectl proxy
+
+# Now you have a dashboard to see your k8s, copy this to a browser
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+
+## Clean up -- buy deleting the group
+az group delete -g ps-aks
+
+
+
