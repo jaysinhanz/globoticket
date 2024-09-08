@@ -1,0 +1,43 @@
+services:
+  frontend:
+    image: frontend:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=123
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - APICONFIGS__CONCERTCATALOG__URI= http://catalog:8080
+      - APICONFIGS__ORDERING__URI= http://ordering:8080
+    ports:
+      - "8080"
+      - "8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+  catalog:
+    image: catalog:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - CONNECTIONSTRINGS__DEFAULTCONNECTION= Server=sqlserver;Database=EventCatalogDb;User=sa;pwd=P@ssW0rd!;MultipleActiveResultSets=true;;TrustServerCertificate=true
+    ports:
+      - "8080"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  ordering:
+    image: ordering:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+  
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    environment:
+      - ACCEPT_EULA=TRUE
+      - MSSQL_SA_PASSWORD=P@ssW0rd!
