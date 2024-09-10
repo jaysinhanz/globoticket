@@ -55,6 +55,14 @@ kubectl proxy
 http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
 
 
+# deploy the kubernetes, go to folder DEMOS/remote-k8s
+kubectl apply -f sqlserver.yaml
+kubectl apply -f ordering.yaml
+kubectl apply -f catalog.yaml
+kubectl apply -f frontend.yaml
+
+and test
+
 ## Clean up -- buy deleting the group
 az group delete -g ps-aks
 

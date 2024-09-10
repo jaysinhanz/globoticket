@@ -11,7 +11,7 @@ spec:
   ports:
   - protocol: TCP
     port: 8080
-    targetPort: 80
+    targetPort: 8080
   type: LoadBalancer
 ---
 #Frontend deployment
@@ -49,5 +49,5 @@ spec:
         - name: ApiConfigs__Ordering__Uri
           value: http://ordering:8080
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         imagePullPolicy: Always
